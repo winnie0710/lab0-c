@@ -122,9 +122,24 @@ bool q_delete_mid(struct list_head *head)
 }
 
 /* Delete all nodes that have duplicate string */
+// https://leetcode.com/problems/remove-duplicates-from-sorted-list-ii/
 bool q_delete_dup(struct list_head *head)
 {
-    // https://leetcode.com/problems/remove-duplicates-from-sorted-list-ii/
+    if (!head)
+        return false;
+    element_t *first, *second;
+    bool isdup = false;
+    list_for_each_entry_safe (first, second, head, list) {
+        if (&second->list != head && !strcmp(first->value, second->value)) {
+            list_del(&first->list);
+            q_release_element(first);
+            isdup = true;
+        } else if (isdup) {
+            list_del(&first->list);
+            q_release_element(first);
+            isdup = false;
+        }
+    }
     return true;
 }
 
@@ -132,6 +147,22 @@ bool q_delete_dup(struct list_head *head)
 void q_swap(struct list_head *head)
 {
     // https://leetcode.com/problems/swap-nodes-in-pairs/
+    if (!head || list_empty(head))
+        break;
+    struct list_head *node;
+    list_for_each (node, head) {
+        struct list_head *next_node = node->next;
+        if (next_node == head)
+            break;
+        node->prev->next = next_node;
+        next_node->prev = node->prev;
+        node->next = next_node->next;
+        next_node->next->prev = node;
+        next_node->next = node;
+        node->prev = next_node;
+
+        node = node->next;
+    }
 }
 
 /* Reverse elements in queue */
