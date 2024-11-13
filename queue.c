@@ -63,7 +63,16 @@ bool q_insert_tail(struct list_head *head, char *s)
 {
     if (!head)
         return false;
-    return q_insert_head(head->prev, s);
+    element_t *element = malloc(sizeof(element_t));
+    if (!element)
+        return false;
+    element->value = strdup(s);
+    if (!element->value) {
+        free(element);
+        return false;
+    }
+    list_add_tail(&element->list, head);
+    return true;
 }
 
 /* Remove an element from head of queue */
@@ -216,7 +225,7 @@ struct list_head *mergelist(struct list_head *l1, struct list_head *l2)
     while (l1 && l2) {
         element_t *e1 = list_entry(l1, element_t, list);
         element_t *e2 = list_entry(l2, element_t, list);
-        if (strcmp(e1->value, e2->value) >= 0) {
+        if (strcmp(e1->value, e2->value) > 0) {
             *cur = l2;
             l2 = l2->next;
         } else {
@@ -225,7 +234,7 @@ struct list_head *mergelist(struct list_head *l1, struct list_head *l2)
         }
         cur = &(*cur)->next;
     }
-    *cur = (struct list_head *) ((u_int64) l1 | (u_int64) l2);
+    *cur = (struct list_head *) ((u_int64_t) l1 | (u_int64_t) l2);
     return head;
 }
 
@@ -273,17 +282,17 @@ int q_descend(struct list_head *head)
 {
     // https://leetcode.com/problems/remove-nodes-from-linked-list/
     if (!head || list_empty(head))
-        return;
+        return 0;
     element_t *first = list_entry(head->prev, element_t, list);
     element_t *second = list_entry(head->prev->prev, element_t, list);
     while (&second->list != head) {
         if (strcmp(first->value, second->value) > 0) {
             list_del(&second->list);
             q_release_element(second);
-            second = list_entry(first->prev, element_t, list);
+            second = list_entry(first->list.prev, element_t, list);
         } else {
-            first = list_entry(first->prev, element_t, list);
-            second = list_entry(second->prev, element_t, list);
+            first = list_entry(first->list.prev, element_t, list);
+            second = list_entry(second->list.prev, element_t, list);
         }
     }
     return q_size(head);
@@ -295,17 +304,17 @@ int q_ascend(struct list_head *head)
 {
     // https://leetcode.com/problems/remove-nodes-from-linked-list/
     if (!head || list_empty(head))
-        return;
+        return 0;
     element_t *first = list_entry(head->next, element_t, list);
     element_t *second = list_entry(head->next->next, element_t, list);
     while (&second->list != head) {
         if (strcmp(first->value, second->value) > 0) {
             list_del(&second->list);
             q_release_element(second);
-            second = list_entry(first->next, element_t, list);
+            second = list_entry(first->list.next, element_t, list);
         } else {
-            first = list_entry(first->next, element_t, list);
-            second = list_entry(second->next, element_t, list);
+            first = list_entry(first->list.next, element_t, list);
+            second = list_entry(second->list.next, element_t, list);
         }
     }
     return q_size(head);
